@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 from langchain_core.output_parsers import BaseOutputParser
 
 
-class RegexParser(BaseOutputParser[Dict[str, str]]):
+class RegexParser(BaseOutputParser):
     """Parse the output of an LLM call using a regex."""
 
     @classmethod

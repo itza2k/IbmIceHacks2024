@@ -1,9 +1,8 @@
 import json
 from typing import Any, Callable, Optional, Union
 
-from langchain_core.utils.json import parse_json_markdown
-
 from langchain.evaluation.schema import StringEvaluator
+from langchain.output_parsers.json import parse_json_markdown
 
 
 class JsonEditDistanceEvaluator(StringEvaluator):
@@ -46,7 +45,7 @@ class JsonEditDistanceEvaluator(StringEvaluator):
             self._string_distance = string_distance
         else:
             try:
-                from rapidfuzz import distance as rfd
+                from rapidfuzz import distance as rfd  # noqa: F401
             except ImportError:
                 raise ImportError(
                     "The default string_distance operator for the "

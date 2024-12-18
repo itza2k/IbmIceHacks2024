@@ -1,5 +1,4 @@
 """Chains and utils related to evaluating question answering functionality."""
-
 from langchain.evaluation.qa.eval_chain import (
     ContextQAEvalChain,
     CotQAEvalChain,

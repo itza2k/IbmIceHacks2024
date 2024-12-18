@@ -147,7 +147,7 @@ class KoboldApiLLM(LLM):
                 from langchain_community.llms import KoboldApiLLM
 
                 llm = KoboldApiLLM(endpoint="http://localhost:5000")
-                llm.invoke("Write a story about dragons.")
+                llm("Write a story about dragons.")
         """
         data: Dict[str, Any] = {
             "prompt": prompt,

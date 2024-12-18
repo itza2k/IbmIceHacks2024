@@ -3,7 +3,7 @@ import logging
 from typing import Optional, Type
 
 from langchain_core.callbacks import CallbackManagerForToolRun
-from pydantic import BaseModel, Field
+from langchain_core.pydantic_v1 import BaseModel, Field
 
 from langchain_community.tools.slack.base import SlackBaseTool
 
@@ -17,7 +17,7 @@ class SlackGetMessageSchema(BaseModel):
     )
 
 
-class SlackGetMessage(SlackBaseTool):  # type: ignore[override, override]
+class SlackGetMessage(SlackBaseTool):
     """Tool that gets Slack messages."""
 
     name: str = "get_messages"

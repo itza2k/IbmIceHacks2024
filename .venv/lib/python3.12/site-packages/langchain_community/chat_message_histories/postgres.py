@@ -2,7 +2,6 @@ import json
 import logging
 from typing import List
 
-from langchain_core._api import deprecated
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import (
     BaseMessage,
@@ -15,25 +14,8 @@ logger = logging.getLogger(__name__)
 DEFAULT_CONNECTION_STRING = "postgresql://postgres:mypassword@localhost/chat_history"
 
 
-@deprecated(
-    since="0.0.31",
-    message=(
-        "This class is deprecated and will be removed in a future version. "
-        "You can swap to using the `PostgresChatMessageHistory`"
-        " implementation in `langchain_postgres`. "
-        "Please do not submit further PRs to this class."
-        "See <https://github.com/langchain-ai/langchain-postgres>"
-    ),
-    alternative="from langchain_postgres import PostgresChatMessageHistory;",
-    pending=True,
-)
 class PostgresChatMessageHistory(BaseChatMessageHistory):
-    """Chat message history stored in a Postgres database.
-
-    **DEPRECATED**: This class is deprecated and will be removed in a future version.
-
-    Use the `PostgresChatMessageHistory` implementation in `langchain_postgres`.
-    """
+    """Chat message history stored in a Postgres database."""
 
     def __init__(
         self,

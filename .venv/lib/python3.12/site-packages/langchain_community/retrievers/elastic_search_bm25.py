@@ -103,7 +103,7 @@ class ElasticSearchBM25Retriever(BaseRetriever):
         try:
             from elasticsearch.helpers import bulk
         except ImportError:
-            raise ImportError(
+            raise ValueError(
                 "Could not import elasticsearch python package. "
                 "Please install it with `pip install elasticsearch`."
             )

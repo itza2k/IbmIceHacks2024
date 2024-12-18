@@ -1,5 +1,4 @@
 """FlyteKit callback handler."""
-
 from __future__ import annotations
 
 import logging
@@ -9,7 +8,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.outputs import LLMResult
-from langchain_core.utils import guard_import
 
 from langchain_community.callbacks.utils import (
     BaseMetadataCallbackHandler,
@@ -28,12 +26,17 @@ logger = logging.getLogger(__name__)
 
 def import_flytekit() -> Tuple[flytekit, renderer]:
     """Import flytekit and flytekitplugins-deck-standard."""
-    return (
-        guard_import("flytekit"),
-        guard_import(
-            "flytekitplugins.deck", pip_name="flytekitplugins-deck-standard"
-        ).renderer,
-    )
+    try:
+        import flytekit  # noqa: F401
+        from flytekitplugins.deck import renderer  # noqa: F401
+    except ImportError:
+        raise ImportError(
+            "To use the flyte callback manager you need"
+            "to have the `flytekit` and `flytekitplugins-deck-standard`"
+            "packages installed. Please install them with `pip install flytekit`"
+            "and `pip install flytekitplugins-deck-standard`."
+        )
+    return flytekit, renderer
 
 
 def analyze_text(
@@ -88,7 +91,7 @@ def analyze_text(
 
 
 class FlyteCallbackHandler(BaseMetadataCallbackHandler, BaseCallbackHandler):
-    """Callback handler that is used within a Flyte task."""
+    """This callback handler that is used within a Flyte task."""
 
     def __init__(self) -> None:
         """Initialize callback handler."""

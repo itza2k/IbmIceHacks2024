@@ -4,7 +4,7 @@ from langchain_core.memory import BaseMemory
 
 
 class ReadOnlySharedMemory(BaseMemory):
-    """Memory wrapper that is read-only and cannot be changed."""
+    """A memory wrapper that is read-only and cannot be changed."""
 
     memory: BaseMemory
 

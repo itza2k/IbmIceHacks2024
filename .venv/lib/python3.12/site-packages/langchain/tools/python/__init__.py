@@ -2,7 +2,7 @@ from typing import Any
 
 
 def __getattr__(name: str = "") -> Any:
-    raise AttributeError(
+    raise ImportError(
         "This tool has been moved to langchain experiment. "
         "This tool has access to a python REPL. "
         "For best practices make sure to sandbox this tool. "

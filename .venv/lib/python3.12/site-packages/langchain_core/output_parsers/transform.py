@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Iterator
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncIterator,
+    Iterator,
     Optional,
     Union,
 )
@@ -16,7 +17,6 @@ from langchain_core.outputs import (
     Generation,
     GenerationChunk,
 )
-from langchain_core.runnables.config import run_in_executor
 
 if TYPE_CHECKING:
     from langchain_core.runnables import RunnableConfig
@@ -37,13 +37,9 @@ class BaseTransformOutputParser(BaseOutputParser[T]):
     ) -> AsyncIterator[T]:
         async for chunk in input:
             if isinstance(chunk, BaseMessage):
-                yield await run_in_executor(
-                    None, self.parse_result, [ChatGeneration(message=chunk)]
-                )
+                yield self.parse_result([ChatGeneration(message=chunk)])
             else:
-                yield await run_in_executor(
-                    None, self.parse_result, [Generation(text=chunk)]
-                )
+                yield self.parse_result([Generation(text=chunk)])
 
     def transform(
         self,
@@ -51,16 +47,6 @@ class BaseTransformOutputParser(BaseOutputParser[T]):
         config: Optional[RunnableConfig] = None,
         **kwargs: Any,
     ) -> Iterator[T]:
-        """Transform the input into the output format.
-
-        Args:
-            input: The input to transform.
-            config: The configuration to use for the transformation.
-            kwargs: Additional keyword arguments.
-
-        Yields:
-            The transformed output.
-        """
         yield from self._transform_stream_with_config(
             input, self._transform, config, run_type="parser"
         )
@@ -71,16 +57,6 @@ class BaseTransformOutputParser(BaseOutputParser[T]):
         config: Optional[RunnableConfig] = None,
         **kwargs: Any,
     ) -> AsyncIterator[T]:
-        """Async transform the input into the output format.
-
-        Args:
-            input: The input to transform.
-            config: The configuration to use for the transformation.
-            kwargs: Additional keyword arguments.
-
-        Yields:
-            The transformed output.
-        """
         async for chunk in self._atransform_stream_with_config(
             input, self._atransform, config, run_type="parser"
         ):
@@ -97,24 +73,15 @@ class BaseCumulativeTransformOutputParser(BaseTransformOutputParser[T]):
 
     def _diff(self, prev: Optional[T], next: T) -> T:
         """Convert parsed outputs into a diff format. The semantics of this are
-        up to the output parser.
-
-        Args:
-            prev: The previous parsed output.
-            next: The current parsed output.
-
-        Returns:
-            The diff between the previous and current parsed output.
-        """
-        raise NotImplementedError
+        up to the output parser."""
+        raise NotImplementedError()
 
     def _transform(self, input: Iterator[Union[str, BaseMessage]]) -> Iterator[Any]:
         prev_parsed = None
-        acc_gen: Union[GenerationChunk, ChatGenerationChunk, None] = None
+        acc_gen = None
         for chunk in input:
-            chunk_gen: Union[GenerationChunk, ChatGenerationChunk]
             if isinstance(chunk, BaseMessageChunk):
-                chunk_gen = ChatGenerationChunk(message=chunk)
+                chunk_gen: Generation = ChatGenerationChunk(message=chunk)
             elif isinstance(chunk, BaseMessage):
                 chunk_gen = ChatGenerationChunk(
                     message=BaseMessageChunk(**chunk.dict())
@@ -122,7 +89,10 @@ class BaseCumulativeTransformOutputParser(BaseTransformOutputParser[T]):
             else:
                 chunk_gen = GenerationChunk(text=chunk)
 
-            acc_gen = chunk_gen if acc_gen is None else acc_gen + chunk_gen  # type: ignore[operator]
+            if acc_gen is None:
+                acc_gen = chunk_gen
+            else:
+                acc_gen = acc_gen + chunk_gen
 
             parsed = self.parse_result([acc_gen], partial=True)
             if parsed is not None and parsed != prev_parsed:
@@ -136,11 +106,10 @@ class BaseCumulativeTransformOutputParser(BaseTransformOutputParser[T]):
         self, input: AsyncIterator[Union[str, BaseMessage]]
     ) -> AsyncIterator[T]:
         prev_parsed = None
-        acc_gen: Union[GenerationChunk, ChatGenerationChunk, None] = None
+        acc_gen = None
         async for chunk in input:
-            chunk_gen: Union[GenerationChunk, ChatGenerationChunk]
             if isinstance(chunk, BaseMessageChunk):
-                chunk_gen = ChatGenerationChunk(message=chunk)
+                chunk_gen: Generation = ChatGenerationChunk(message=chunk)
             elif isinstance(chunk, BaseMessage):
                 chunk_gen = ChatGenerationChunk(
                     message=BaseMessageChunk(**chunk.dict())
@@ -148,12 +117,15 @@ class BaseCumulativeTransformOutputParser(BaseTransformOutputParser[T]):
             else:
                 chunk_gen = GenerationChunk(text=chunk)
 
-            acc_gen = chunk_gen if acc_gen is None else acc_gen + chunk_gen  # type: ignore[operator]
+            if acc_gen is None:
+                acc_gen = chunk_gen
+            else:
+                acc_gen = acc_gen + chunk_gen
 
             parsed = await self.aparse_result([acc_gen], partial=True)
             if parsed is not None and parsed != prev_parsed:
                 if self.diff:
-                    yield await run_in_executor(None, self._diff, prev_parsed, parsed)
+                    yield self._diff(prev_parsed, parsed)
                 else:
                     yield parsed
                 prev_parsed = parsed

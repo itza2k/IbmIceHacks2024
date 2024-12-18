@@ -14,7 +14,6 @@ creating more responsive UX.
 
 This module contains schema and implementation of LangChain Runnables primitives.
 """
-
 from langchain_core.runnables.base import (
     Runnable,
     RunnableBinding,

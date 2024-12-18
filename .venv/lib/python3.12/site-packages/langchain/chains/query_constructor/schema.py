@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from langchain_core.pydantic_v1 import BaseModel
 
 
 class AttributeInfo(BaseModel):
@@ -8,7 +8,8 @@ class AttributeInfo(BaseModel):
     description: str
     type: str
 
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        frozen=True,
-    )
+    class Config:
+        """Configuration for this pydantic object."""
+
+        arbitrary_types_allowed = True
+        frozen = True

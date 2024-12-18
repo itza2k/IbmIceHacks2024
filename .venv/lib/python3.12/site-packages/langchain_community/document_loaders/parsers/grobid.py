@@ -48,11 +48,7 @@ class GrobidParser(BaseBlobParser):
             )
         soup = BeautifulSoup(xml_data, "xml")
         sections = soup.find_all("div")
-        titles = soup.find_all("title")
-        if titles:
-            title = titles[0].text
-        else:
-            title = "No title found"
+        title = soup.find_all("title")[0].text
         chunks = []
         for section in sections:
             sect = section.find("head")

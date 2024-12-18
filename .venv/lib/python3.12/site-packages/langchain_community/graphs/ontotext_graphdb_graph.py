@@ -81,7 +81,7 @@ class OntotextGraphDBGraph:
             import rdflib
             from rdflib.plugins.stores import sparqlstore
         except ImportError:
-            raise ImportError(
+            raise ValueError(
                 "Could not import rdflib python package. "
                 "Please install it with `pip install rdflib`."
             )

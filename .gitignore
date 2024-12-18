@@ -19,3 +19,8 @@ dist/
 
 # Project specific
 faiss_index/
+
+# Deployment
+*.log
+*.pkl
+node_modules/

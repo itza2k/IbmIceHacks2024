@@ -24,8 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class SQLiteVSS(VectorStore):
-    """SQLite with VSS extension as a vector database.
-
+    """Wrapper around SQLite with vss extension as a vector database.
     To use, you should have the ``sqlite-vss`` python package installed.
     Example:
         .. code-block:: python

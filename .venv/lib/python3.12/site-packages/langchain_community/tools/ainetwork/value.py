@@ -3,7 +3,7 @@ import json
 from typing import Optional, Type, Union
 
 from langchain_core.callbacks import AsyncCallbackManagerForToolRun
-from pydantic import BaseModel, Field
+from langchain_core.pydantic_v1 import BaseModel, Field
 
 from langchain_community.tools.ainetwork.base import AINBaseTool, OperationType
 
@@ -18,7 +18,7 @@ class ValueSchema(BaseModel):
     )
 
 
-class AINValueOps(AINBaseTool):  # type: ignore[override, override]
+class AINValueOps(AINBaseTool):
     """Tool for value operations."""
 
     name: str = "AINvalueOps"

@@ -1,27 +1,57 @@
-from typing import TYPE_CHECKING, Any
+# flake8: noqa
+REQUEST_TEMPLATE = """You are a helpful AI Assistant. Please provide JSON arguments to agentFunc() based on the user's instructions.
 
-from langchain._api import create_importer
+API_SCHEMA: ```typescript
+{schema}
+```
 
-if TYPE_CHECKING:
-    from langchain_community.chains.openapi.prompts import (
-        REQUEST_TEMPLATE,
-        RESPONSE_TEMPLATE,
-    )
+USER_INSTRUCTIONS: "{instructions}"
 
-# Create a way to dynamically look up deprecated imports.
-# Used to consolidate logic for raising deprecation warnings and
-# handling optional imports.
-DEPRECATED_LOOKUP = {
-    "REQUEST_TEMPLATE": "langchain_community.chains.openapi.prompts",
-    "RESPONSE_TEMPLATE": "langchain_community.chains.openapi.prompts",
-}
+Your arguments must be plain json provided in a markdown block:
 
-_import_attribute = create_importer(__package__, deprecated_lookups=DEPRECATED_LOOKUP)
+ARGS: ```json
+{{valid json conforming to API_SCHEMA}}
+```
+
+Example
+-----
+
+ARGS: ```json
+{{"foo": "bar", "baz": {{"qux": "quux"}}}}
+```
+
+The block must be no more than 1 line long, and all arguments must be valid JSON. All string arguments must be wrapped in double quotes.
+You MUST strictly comply to the types indicated by the provided schema, including all required args.
+
+If you don't have sufficient information to call the function due to things like requiring specific uuid's, you can reply with the following message:
+
+Message: ```text
+Concise response requesting the additional information that would make calling the function successful.
+```
+
+Begin
+-----
+ARGS:
+"""
+RESPONSE_TEMPLATE = """You are a helpful AI assistant trained to answer user queries from API responses.
+You attempted to call an API, which resulted in:
+API_RESPONSE: {response}
+
+USER_COMMENT: "{instructions}"
 
 
-def __getattr__(name: str) -> Any:
-    """Look up attributes dynamically."""
-    return _import_attribute(name)
+If the API_RESPONSE can answer the USER_COMMENT respond with the following markdown json block:
+Response: ```json
+{{"response": "Human-understandable synthesis of the API_RESPONSE"}}
+```
 
+Otherwise respond with the following markdown json block:
+Response Error: ```json
+{{"response": "What you did and a concise statement of the resulting error. If it can be easily fixed, provide a suggestion."}}
+```
 
-__all__ = ["REQUEST_TEMPLATE", "RESPONSE_TEMPLATE"]
+You MUST respond as a markdown json code block. The person you are responding to CANNOT see the API_RESPONSE, so if there is any relevant information there you must include it in your response.
+
+Begin:
+---
+"""

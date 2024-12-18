@@ -1,27 +1,84 @@
-from typing import TYPE_CHECKING, Any
+from __future__ import annotations
 
-from langchain._api import create_importer
+from typing import TYPE_CHECKING, Tuple, Union
+
+from langchain.chains.query_constructor.ir import (
+    Comparator,
+    Comparison,
+    Operation,
+    Operator,
+    StructuredQuery,
+    Visitor,
+)
 
 if TYPE_CHECKING:
-    from langchain_community.query_constructors.timescalevector import (
-        TimescaleVectorTranslator,
-    )
-
-# Create a way to dynamically look up deprecated imports.
-# Used to consolidate logic for raising deprecation warnings and
-# handling optional imports.
-DEPRECATED_LOOKUP = {
-    "TimescaleVectorTranslator": (
-        "langchain_community.query_constructors.timescalevector"
-    ),
-}
-
-_import_attribute = create_importer(__package__, deprecated_lookups=DEPRECATED_LOOKUP)
+    from timescale_vector import client
 
 
-def __getattr__(name: str) -> Any:
-    """Look up attributes dynamically."""
-    return _import_attribute(name)
+class TimescaleVectorTranslator(Visitor):
+    """Translate the internal query language elements to valid filters."""
 
+    allowed_operators = [Operator.AND, Operator.OR, Operator.NOT]
+    """Subset of allowed logical operators."""
 
-__all__ = ["TimescaleVectorTranslator"]
+    allowed_comparators = [
+        Comparator.EQ,
+        Comparator.GT,
+        Comparator.GTE,
+        Comparator.LT,
+        Comparator.LTE,
+    ]
+
+    COMPARATOR_MAP = {
+        Comparator.EQ: "==",
+        Comparator.GT: ">",
+        Comparator.GTE: ">=",
+        Comparator.LT: "<",
+        Comparator.LTE: "<=",
+    }
+
+    OPERATOR_MAP = {Operator.AND: "AND", Operator.OR: "OR", Operator.NOT: "NOT"}
+
+    def _format_func(self, func: Union[Operator, Comparator]) -> str:
+        self._validate_func(func)
+        if isinstance(func, Operator):
+            value = self.OPERATOR_MAP[func.value]  # type: ignore
+        elif isinstance(func, Comparator):
+            value = self.COMPARATOR_MAP[func.value]  # type: ignore
+        return f"{value}"
+
+    def visit_operation(self, operation: Operation) -> client.Predicates:
+        try:
+            from timescale_vector import client
+        except ImportError as e:
+            raise ImportError(
+                "Cannot import timescale-vector. Please install with `pip install "
+                "timescale-vector`."
+            ) from e
+        args = [arg.accept(self) for arg in operation.arguments]
+        return client.Predicates(*args, operator=self._format_func(operation.operator))
+
+    def visit_comparison(self, comparison: Comparison) -> client.Predicates:
+        try:
+            from timescale_vector import client
+        except ImportError as e:
+            raise ImportError(
+                "Cannot import timescale-vector. Please install with `pip install "
+                "timescale-vector`."
+            ) from e
+        return client.Predicates(
+            (
+                comparison.attribute,
+                self._format_func(comparison.comparator),
+                comparison.value,
+            )
+        )
+
+    def visit_structured_query(
+        self, structured_query: StructuredQuery
+    ) -> Tuple[str, dict]:
+        if structured_query.filter is None:
+            kwargs = {}
+        else:
+            kwargs = {"predicates": structured_query.filter.accept(self)}
+        return structured_query.query, kwargs

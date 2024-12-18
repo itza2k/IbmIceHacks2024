@@ -96,7 +96,7 @@ class RSSFeedLoader(BaseLoader):
 
     def lazy_load(self) -> Iterator[Document]:
         try:
-            import feedparser
+            import feedparser  # noqa:F401
         except ImportError:
             raise ImportError(
                 "feedparser package not found, please install it with "

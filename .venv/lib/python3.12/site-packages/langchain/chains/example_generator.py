@@ -1,9 +1,10 @@
 from typing import List
 
 from langchain_core.language_models import BaseLanguageModel
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts.few_shot import FewShotPromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
+
+from langchain.chains.llm import LLMChain
 
 TEST_GEN_TEMPLATE_SUFFIX = "Add another example."
 
@@ -18,5 +19,5 @@ def generate_example(
         input_variables=[],
         example_prompt=prompt_template,
     )
-    chain = prompt | llm | StrOutputParser()
-    return chain.invoke({})
+    chain = LLMChain(llm=llm, prompt=prompt)
+    return chain.predict()

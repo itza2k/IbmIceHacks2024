@@ -1,5 +1,4 @@
 """Json agent."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
@@ -26,23 +25,7 @@ def create_json_agent(
     agent_executor_kwargs: Optional[Dict[str, Any]] = None,
     **kwargs: Any,
 ) -> AgentExecutor:
-    """Construct a json agent from an LLM and tools.
-
-    Args:
-        llm: The language model to use.
-        toolkit: The toolkit to use.
-        callback_manager: The callback manager to use. Default is None.
-        prefix: The prefix to use. Default is JSON_PREFIX.
-        suffix: The suffix to use. Default is JSON_SUFFIX.
-        format_instructions: The format instructions to use. Default is None.
-        input_variables: The input variables to use. Default is None.
-        verbose: Whether to print verbose output. Default is False.
-        agent_executor_kwargs: Optional additional arguments for the agent executor.
-        kwargs: Additional arguments for the agent.
-
-    Returns:
-        The agent executor.
-    """
+    """Construct a json agent from an LLM and tools."""
     from langchain.agents.agent import AgentExecutor
     from langchain.agents.mrkl.base import ZeroShotAgent
     from langchain.chains.llm import LLMChain
